@@ -3,8 +3,6 @@ import javax.swing.JFrame;
 
 public class SuperTicTacToe {
 
-    //private Object game = new SuperTicTacToeGame();
-
     public static void main(String[] args){
         JFrame frame = new JFrame("SuperTicTacToe");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

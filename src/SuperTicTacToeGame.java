@@ -1,5 +1,7 @@
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SuperTicTacToeGame {
 
@@ -7,12 +9,12 @@ public class SuperTicTacToeGame {
     private Cell[][] board;
     private GameStatus status;
 
-    private ArrayList<Point> moves = new ArrayList<Point>();
+    private final ArrayList<Point> moves = new ArrayList<>();
     private int currentMove = 0;
 
-    //TODO For AI Select Later
     private int AIxSpot = 0;
     private int AIySpot = 0;
+    private boolean AIPlayer = false;
 
     //Default Number of Rows, Columns, and Connection Lengths
     private int numRows = 3;
@@ -39,8 +41,12 @@ public class SuperTicTacToeGame {
     }
 
     public void setPlayer(Player playerIn){
-        if (playerIn == Player.OPlayer)
-            setNextPlayer();
+        player = playerIn;
+    }
+
+    public void setAIPlayer(int s){
+        if (s == 0)
+            AIPlayer = true;
     }
 
     //Switches X/O's turn
@@ -57,10 +63,6 @@ public class SuperTicTacToeGame {
         return numCols;
     }
 
-    public int getNumConnections(){
-        return numConnections;
-    }
-
     public GameStatus getStatus(){
         return status;
     }
@@ -69,19 +71,13 @@ public class SuperTicTacToeGame {
         return board;
     }
 
-    //Returns Current Player X's or O's
-    public Player getPlayer(){
-        return player;
-    }
-
-
 
     //Creates board of row and col size
     public SuperTicTacToeGame(){
         status = GameStatus.IN_PROGRESS;
         player = Player.XPlayer;
-        int x = getRows();
-        int y = getCols();
+        int x = numRows;
+        int y = numCols;
         board = new Cell[x][y];
 
         for (int row = 0; row < x; row++)
@@ -92,13 +88,16 @@ public class SuperTicTacToeGame {
     //Resets the game
     public void reset(){
         status = GameStatus.IN_PROGRESS;
-        int x = getRows();
-        int y = getCols();
+        int x = numRows;
+        int y = numCols;
         board = new Cell[x][y];
 
         for (int row = 0; row < x; row++)
             for (int col = 0; col < y; col++)
                 board[row][col] = Cell.EMPTY;
+
+        if (AIPlayer && player == Player.OPlayer)
+            AIChoice();
     }
 
     //Method to select cell for X/O placement
@@ -117,7 +116,7 @@ public class SuperTicTacToeGame {
 
     //Verifies if space is empty
     public boolean isValidMove(int row, int col){
-        return (board[row][col] == Cell.EMPTY);
+        return (board[row][col] == Cell.EMPTY && status == GameStatus.IN_PROGRESS);
     }
 
     //Saves last action
@@ -128,153 +127,181 @@ public class SuperTicTacToeGame {
 
     //Undo last action
     void undoAction(){
-        //creates temp point and extracts x-y pos for clearing on the board
-        Point temp = new Point (0,0);
-        temp = moves.get(currentMove - 1);
-        int x = (int) temp.getX();
-        int y = (int) temp.getY();
-        board[x][y] = Cell.EMPTY;
-        //switches player and removes last index in moves
-        setNextPlayer();
-        moves.remove(currentMove -1);
-        currentMove -= 1;
+        try {
+            //creates temp point and extracts x-y pos for clearing on the board
+            Point temp;
+            temp = moves.get(currentMove - 1);
+            int x = (int) temp.getX();
+            int y = (int) temp.getY();
+            board[x][y] = Cell.EMPTY;
+            //switches player and removes last index in moves
+            setNextPlayer();
+            moves.remove(currentMove - 1);
+            currentMove -= 1;
+
+            if (AIPlayer) {
+                temp = moves.get(currentMove - 1);
+                x = (int) temp.getX();
+                y = (int) temp.getY();
+                board[x][y] = Cell.EMPTY;
+                //switches player and removes last index in moves
+                setNextPlayer();
+                moves.remove(currentMove - 1);
+                currentMove -= 1;
+            }
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(null, "No more Undo's Available");
+        }
     }
 
-
-    //TODO RECHECK "ACCEPTS NON ACCURATE WINS"
+    //TODO FIX 3+ x 3+
     //Checks if X or O has won
     public boolean isComplete(){
-        int x = getCols();
-        int y = getRows();
-        int z = x * y;
-        int spaceFilled = 0;
+        int x = numCols;
+        int y = numRows;
+        int n = numConnections;
+        int count;
 
-        int xSequence = 0;
-        int oSequence = 0;
-
-
-        //Checks for a winner
-        for (int r = 0; r < x; r++)
+        //Horizontal Check
+        for (int r = 0; r < x; r++) {
+            count = 0;
             for (int c = 0; c < y; c++) {
-                //Vertical / Horizontal Check
-                if (r < (y - getNumConnections() + 1)) {
-                    for (int count = 0; count < getNumConnections(); count++) {
-                        if (board[r + xSequence][c] == Cell.X) {
-                            xSequence += 1;
-                            if (xSequence == getNumConnections()) {
-                                status = GameStatus.X_WON;
-                                System.out.println("Win Type c.1");
-                                return true;
-                            }
-                        }
-                        else
-                            xSequence = 0;
+                if (board[r][c] == Cell.X)
+                    count += 1;
+                else
+                    count += 0;
 
-                        if (board[r + oSequence][c] == Cell.O) {
-                            oSequence += 1;
-                            if (oSequence == getNumConnections()) {
-                                status = GameStatus.O_WON;
-                                System.out.println("Win Type c.2");
-                                return true;
-                            }
-                        }
-                        else
-                            oSequence = 0;
-                    }
+                if (count == n) {
+                    status = GameStatus.X_WON;
+                    System.out.println("horizontal");
+                    return true;
                 }
-                if (c < (x - getNumConnections() + 1)) {
-                    for (int count = 0; count < getNumConnections(); count++) {
-                        if (board[r][c + xSequence] == Cell.X) {
-                            xSequence += 1;
-                            if (xSequence == getNumConnections()) {
-                                status = GameStatus.X_WON;
-                                System.out.println("Win Type r.1");
-                                return true;
-                            }
-                        } else
-                            xSequence = 0;
-
-                        if (board[r][c + oSequence] == Cell.O) {
-                            oSequence += 1;
-                            if (oSequence == getNumConnections()) {
-                                status = GameStatus.O_WON;
-                                System.out.println("Win Type r.2");
-                                return true;
-                            }
-                        } else
-                            oSequence = 0;
-                    }
-                }
-
-                //Diagonal Check
-                if (r < (y - getNumConnections() + 1) && c < (x - getNumConnections() + 1)) {
-                    for (int count = 0; count < getNumConnections(); count++) {
-                        if (board[r + xSequence][c + xSequence] == Cell.X) {
-                            xSequence += 1;
-                            if (xSequence == getNumConnections()) {
-                                status = GameStatus.X_WON;
-                                System.out.println("Win Type d.1");
-                                return true;
-                            }
-                        }
-                        else
-                            xSequence = 0;
-
-                        }
-                    for (int count = 0; count < getNumConnections(); count++) {
-                        if (board[r + oSequence][c + oSequence] == Cell.O) {
-                            oSequence += 1;
-                            if (oSequence == getNumConnections()) {
-                                status = GameStatus.O_WON;
-                                System.out.println("Win Type d.1");
-                                return true;
-                            }
-                        }
-                        else
-                            oSequence = 0;
-                    }
-
-                    //TODO DOUBLE CHECK "IT ACCEPTS WRONG WINS SOMETIMES"
-                    //Example of bad win
-                    //  o   o   x
-                    //  -   o   x
-                    //  -   x   -
-                    for (int count = 0; count < getNumConnections(); count++) {
-                        if (board[numRows - 1 - xSequence][numCols - 1 - xSequence] == Cell.X) {
-                            xSequence += 1;
-                            if (xSequence == getNumConnections()) {
-                                status = GameStatus.X_WON;
-                                System.out.println("Win Type d.2");
-                                return true;
-                            }
-                        }
-                        else
-                            xSequence = 0;
-                    }
-                    for (int count = 0; count < getNumConnections(); count++) {
-                        if (board[numRows - 1 - oSequence][numCols - 1 - oSequence] == Cell.O) {
-                            oSequence += 1;
-                            if (oSequence == getNumConnections()) {
-                                status = GameStatus.O_WON;
-                                System.out.println("Win Type d.2");
-                                return true;
-                            }
-                        }
-                        else
-                            oSequence = 0;
-                    }
-
-                }
-
             }
+        }
+
+        for (int r = 0; r < x; r++) {
+            count = 0;
+            for (int c = 0; c < y; c++) {
+                if (board[r][c] == Cell.O)
+                    count += 1;
+                else
+                    count += 0;
+
+                if (count == n) {
+                    status = GameStatus.O_WON;
+                    return true;
+                }
+            }
+        }
+
+        //Vertical Check
+        for (int c = 0; c < y; c++) {
+            count = 0;
+            for (int r = 0; r < x; r++) {
+                if (board[r][c] == Cell.X)
+                    count += 1;
+                else {
+                    count += 0;
+                }
+                if (count == n) {
+                    status = GameStatus.X_WON;
+                    System.out.println("vertical");
+                    return true;
+                }
+            }
+        }
+
+        for (int c = 0; c < y; c++) {
+            count = 0;
+            for (int r = 0; r < x; r++) {
+                if (board[r][c] == Cell.O)
+                    count += 1;
+                else
+                    count += 0;
+
+                if (count == n) {
+                    status = GameStatus.O_WON;
+                    return true;
+                }
+            }
+        }
+
+        //Diagonal Check
+        for (int r = 0; r < (x - n + 1); r++) {
+            count = 0;
+            for (int c = 0; c < (y - n + 1); c++)
+                for (int i = 0; i < n; i++) {
+                    if (board[r + i][c + i] == Cell.X)
+                        count += 1;
+                    else
+                        count = 0;
+
+                    if (count == n) {
+                        status = GameStatus.X_WON;
+                        System.out.println("diagonal");
+                        return true;
+                    }
+                }
+        }
+
+        for (int r = 0; r < (x - n + 1); r++) {
+            count = 0;
+            for (int c = 0; c < (y - n + 1); c++)
+                for (int i = 0; i < n; i++) {
+                    if (board[r + i][c + i] == Cell.O)
+                        count += 1;
+                    else
+                        count = 0;
+
+                    if (count == n) {
+                        status = GameStatus.O_WON;
+                        return true;
+                    }
+                }
+        }
+
+        //Reverse Diagonal Check
+        for (int r = 0; r < (x - n + 1); r++) {
+            count = 0;
+            for (int c = n - 1; c < y; c++)
+                for (int i = 0; i < n; i++) {
+                    if (board[r + i][c - i] == Cell.X)
+                        count += 1;
+                    else
+                        count = 0;
+
+                    if (count == n) {
+                        status = GameStatus.X_WON;
+                        System.out.println("reverse diagonal");
+                        return true;
+                    }
+                }
+        }
+
+        for (int r = 0; r < (x - n + 1); r++) {
+            count = 0;
+            for (int c = n - 1; c < y; c++)
+                for (int i = 0; i < n; i++) {
+                    if (board[r + i][c - i] == Cell.O)
+                        count += 1;
+                    else
+                        count = 0;
+
+                    if (count == n) {
+                        status = GameStatus.O_WON;
+                        return true;
+                    }
+                }
+        }
 
         //CATS Check
+        count = 0;
         for (int r = 0; r < x; r++)
-            for (int c = 0; c < y; c++)
-            {
-                if (board[r][c] == Cell.X || board[r][c] == Cell.O)
-                    spaceFilled += 1;
-                if (spaceFilled == z) {
+            for (int c = 0; c < y; c++) {
+                if (board[r][c] != Cell.EMPTY)
+                    count += 1;
+                if (count == (x * y)) {
                     status = GameStatus.CATS;
                     return true;
                 }
@@ -283,42 +310,268 @@ public class SuperTicTacToeGame {
         return false;
     }
 
+    void AIChoice(){
+        if (AIPlayer && player == Player.OPlayer && status == GameStatus.IN_PROGRESS) {
+            if (canWin()) {
+                select(AIxSpot, AIySpot);
+                System.out.println("Not Random");
+            }
+            else if (canLose()) {
+                select(AIxSpot, AIySpot);
+                System.out.println("Not Random");
+            }
+            else if (canPlaceNearSelf()) {
+                System.out.println("Not Random");
+                select(AIxSpot, AIySpot);
+            }
+            else {
+                int randomX = ThreadLocalRandom.current().nextInt(0, numRows);
+                int randomY = ThreadLocalRandom.current().nextInt(0, numCols);
+                if (isValidMove(randomX, randomY)) {
+                    select(randomX, randomY);
+                    System.out.println("Random");
+                }
+                else
+                    AIChoice();
+            }
+        }
+    }
 
+    private boolean canWin(){
+        int x = numCols;
+        int y = numRows;
+        int n = numConnections;
+        int b = 1;  //buffer space
+        int count;
 
+        //Horizontal Check
+        for (int r = 0; r < x; r++) {
+            count = 0;
+            for (int c = 0; c < y; c++) {
+                if (board[r][c] == Cell.O)
+                    count += 1;
+                else if (board[r][c] == Cell.EMPTY && b == 1) {
+                    count += 1;
+                    AIxSpot = r;
+                    AIySpot = c;
+                    b = 0;
+                }
+                else {
+                    count += 0;
+                    b = 1;
+                }
+                if (count == n)
+                    return true;
+            }
+        }
 
+        //Vertical Check
+        for (int c = 0; c < y; c++) {
+            count = 0;
+            for (int r = 0; r < x; r++) {
+                if (board[r][c] == Cell.O)
+                    count += 1;
+                else if (board[r][c] == Cell.EMPTY && b == 1) {
+                    count += 1;
+                    AIxSpot = r;
+                    AIySpot = c;
+                    b = 0;
+                }
+                else {
+                    count += 0;
+                    b = 1;
+                }
+                if (count == n)
+                    return true;
+            }
+        }
 
+        //Diagonal Check
+        for (int r = 0; r < (x - n + 1); r++) {
+            count = 0;
+            for (int c = 0; c < (y - n + 1); c++)
+                for (int i = 0; i < n; i++) {
+                    if (board[r + i][c + i] == Cell.O)
+                        count += 1;
+                    else if (board[r + i][c + i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r + i;
+                        AIySpot = c + i;
+                        b = 0;
+                    }
+                    else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+        }
 
+        //Reverse Diagonal Check
+        for (int r = 0; r < (x - n + 1); r++) {
+            count = 0;
+            for (int c = n - 1; c < y; c++)
+                for (int i = 0; i < n; i++) {
+                    if (board[r + i][c - i] == Cell.O)
+                        count += 1;
+                    else if (board[r + i][c - i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r + i;
+                        AIySpot = c - i;
+                        b = 0;
+                    }
+                    else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+        }
 
-    //TODO Dont worry about for now
-//    void AIChoice(){
-//        if (canWin())
-//            System.out.println("O can Win");
-//        else if (canLose())
-//            System.out.println("O can Lose");
-//        else if (canPlaceNearSelf())
-//            System.out.println("O can place near O");
-//        else
-//            System.out.println("O will place Random");
-//
-//    }
-//
-//    private boolean canWin(){
-//
-//
-//
-//
-//        return false;
-//    }
-//
-//    private boolean canLose(){
-//
-//
-//        return false;
-//    }
-//
-//    private boolean canPlaceNearSelf(){
-//
-//        return false;
-//    }
+        return false;
+    }
+
+    private boolean canLose(){
+        int x = numCols;
+        int y = numRows;
+        int n = numConnections;
+        int b = 1;  //buffer space
+        int count;
+
+        //Horizontal Check
+        for (int r = 0; r < x; r++) {
+            count = 0;
+            for (int c = 0; c < y; c++) {
+                if (board[r][c] == Cell.X)
+                    count += 1;
+                else if (board[r][c] == Cell.EMPTY && b == 1) {
+                    count += 1;
+                    AIxSpot = r;
+                    AIySpot = c;
+                    b = 0;
+                }
+                else {
+                    count += 0;
+                    b = 1;
+                }
+                if (count == n)
+                    return true;
+            }
+        }
+
+        //Vertical Check
+        for (int c = 0; c < y; c++) {
+            count = 0;
+            for (int r = 0; r < x; r++) {
+                if (board[r][c] == Cell.X)
+                    count += 1;
+                else if (board[r][c] == Cell.EMPTY && b == 1) {
+                    count += 1;
+                    AIxSpot = r;
+                    AIySpot = c;
+                    b = 0;
+                }
+                else {
+                    count += 0;
+                    b = 1;
+                }
+                if (count == n)
+                    return true;
+            }
+        }
+
+        //Diagonal Check
+        for (int r = 0; r < (x - n + 1); r++) {
+            count = 0;
+            for (int c = 0; c < (y - n + 1); c++)
+                for (int i = 0; i < n; i++) {
+                    if (board[r + i][c + i] == Cell.X)
+                        count += 1;
+                    else if (board[r + i][c + i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r + i;
+                        AIySpot = c + i;
+                        b = 0;
+                    }
+                    else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+        }
+
+        //Reverse Diagonal Check
+        for (int r = 0; r < (x - n + 1); r++) {
+            count = 0;
+            for (int c = n - 1; c < y; c++)
+                for (int i = 0; i < n; i++) {
+                    if (board[r + i][c - i] == Cell.X)
+                        count += 1;
+                    else if (board[r + i][c - i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r + i;
+                        AIySpot = c - i;
+                        b = 0;
+                    }
+                    else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+        }
+
+        return false;
+    }
+
+    private boolean canPlaceNearSelf(){
+        int x = numRows;
+        int y = numCols;
+        for (int r = 0; r < x - 1; r++)
+            for (int c = 0; c < y - 1; c++)
+                if (board[r][c] == Cell.O) {
+                    if (board[r + 1][c] == Cell.EMPTY) {
+                        AIxSpot = r + 1;
+                        AIySpot = c;
+                        return true;
+                    }
+                    if (board[r][c + 1] == Cell.EMPTY) {
+                        AIxSpot = r;
+                        AIySpot = c + 1;
+                        return true;
+                    }
+                    if (board[r + 1][c + 1] == Cell.EMPTY) {
+                        AIxSpot = r + 1;
+                        AIySpot = c + 1;
+                        return true;
+                    }
+                }
+        for (int r = 1; r < x; r++)
+            for (int c = 1; c < y; c++)
+                if (board[r][c] == Cell.O) {
+                    if (board[r - 1][c] == Cell.EMPTY) {
+                        AIxSpot = r - 1;
+                        AIySpot = c;
+                        return true;
+                    }
+                    if (board[r][c - 1] == Cell.EMPTY) {
+                        AIxSpot = r;
+                        AIySpot = c - 1;
+                        return true;
+                    }
+                    if (board[r - 1][c - 1] == Cell.EMPTY) {
+                        AIxSpot = r - 1;
+                        AIySpot = c - 1;
+                        return true;
+                    }
+                }
+
+        return false;
+    }
 
 }
