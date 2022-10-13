@@ -165,7 +165,6 @@ public class SuperTicTacToeGame {
         }
     }
 
-    //TODO FIX 3+ x 3+ i think its fixed now
     //Checks if X or O has won
     public boolean isComplete(){
         int x = numCols;
@@ -184,7 +183,7 @@ public class SuperTicTacToeGame {
 
                 if (count == n) {
                     status = GameStatus.X_WON;
-                    System.out.println("horizontal");
+                    System.out.println("H");
                     return true;
                 }
             }
@@ -216,7 +215,7 @@ public class SuperTicTacToeGame {
                 }
                 if (count == n) {
                     status = GameStatus.X_WON;
-                    System.out.println("vertical");
+                    System.out.println("V");
                     return true;
                 }
             }
@@ -239,8 +238,8 @@ public class SuperTicTacToeGame {
 
         //Diagonal Check
         for (int r = 0; r < (x - n + 1); r++) {
-            count = 0;
-            for (int c = 0; c < (y - n + 1); c++)
+            for (int c = 0; c < (y - n + 1); c++){
+                count = 0;
                 for (int i = 0; i < n; i++) {
                     if (board[r + i][c + i] == Cell.X)
                         count += 1;
@@ -249,15 +248,16 @@ public class SuperTicTacToeGame {
 
                     if (count == n) {
                         status = GameStatus.X_WON;
-                        System.out.println("diagonal");
+                        System.out.println("D");
                         return true;
                     }
                 }
+            }
         }
 
         for (int r = 0; r < (x - n + 1); r++) {
-            count = 0;
-            for (int c = 0; c < (y - n + 1); c++)
+            for (int c = 0; c < (y - n + 1); c++){
+                count = 0;
                 for (int i = 0; i < n; i++) {
                     if (board[r + i][c + i] == Cell.O)
                         count += 1;
@@ -269,12 +269,13 @@ public class SuperTicTacToeGame {
                         return true;
                     }
                 }
+            }
         }
 
         //Reverse Diagonal Check
         for (int r = 0; r < (x - n + 1); r++) {
-            count = 0;
-            for (int c = n - 1; c < y; c++)
+            for (int c = n - 1; c < y; c++){
+                count = 0;
                 for (int i = 0; i < n; i++) {
                     if (board[r + i][c - i] == Cell.X)
                         count += 1;
@@ -283,15 +284,16 @@ public class SuperTicTacToeGame {
 
                     if (count == n) {
                         status = GameStatus.X_WON;
-                        System.out.println("reverse diagonal");
+                        System.out.println("RD");
                         return true;
                     }
                 }
+            }
         }
 
         for (int r = 0; r < (x - n + 1); r++) {
-            count = 0;
-            for (int c = n - 1; c < y; c++)
+            for (int c = n - 1; c < y; c++) {
+                count = 0;
                 for (int i = 0; i < n; i++) {
                     if (board[r + i][c - i] == Cell.O)
                         count += 1;
@@ -303,6 +305,7 @@ public class SuperTicTacToeGame {
                         return true;
                     }
                 }
+            }
         }
 
         //CATS Check
@@ -351,13 +354,82 @@ public class SuperTicTacToeGame {
         int x = numCols;
         int y = numRows;
         int n = numConnections;
-        int b = 1;  //buffer space
+        int b;  //buffer space
         int count;
+
+        //Horizontal Check
+        for (int r = 0; r < x - n - 1; r++) {
+            for (int c = 0; c < y - n - 1; c++) {
+                count = 0;
+                b = 1;
+                for (int i = 0; i < n; i ++) {
+                    if (board[r + i][c] == Cell.O)
+                        count += 1;
+                    else if (board[r + i][c] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r + i;
+                        AIySpot = c;
+                        b = 0;
+                    } else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+            }
+        }
+
+        //Vertical Check
+        for (int c = 0; c < y - n - 1; c++) {
+            for (int r = 0; r < x; r++) {
+                count = 0;
+                b = 1;
+                for (int i = 0; i < n; i ++) {
+                    if (board[r][c + i] == Cell.O)
+                        count += 1;
+                    else if (board[r][c + i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r;
+                        AIySpot = c + i;
+                        b = 0;
+                    } else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+            }
+        }
 
         //Horizontal Check
         for (int r = 0; r < x; r++) {
             count = 0;
+            b = 1;
             for (int c = 0; c < y; c++) {
+                if (board[r][c] == Cell.O)
+                    count += 1;
+                else if (board[r][c] == Cell.EMPTY && b == 1) {
+                    count += 1;
+                    AIxSpot = r;
+                    AIySpot = c;
+                    b = 0;
+                }
+                else {
+                    count = 0;
+                    b = 1;
+                }
+                if (count == n)
+                    return true;
+            }
+        }
+
+        //Backward Horizontal Check
+        for (int r = x - 1; r >= 0; r--) {
+            count = 0;
+            b = 1;
+            for (int c = y - 1; c >= 0; c--) {
                 if (board[r][c] == Cell.O)
                     count += 1;
                 else if (board[r][c] == Cell.EMPTY && b == 1) {
@@ -378,7 +450,30 @@ public class SuperTicTacToeGame {
         //Vertical Check
         for (int c = 0; c < y; c++) {
             count = 0;
+            b = 1;
             for (int r = 0; r < x; r++) {
+                if (board[r][c] == Cell.O)
+                    count += 1;
+                else if (board[r][c] == Cell.EMPTY && b == 1) {
+                    count += 1;
+                    AIxSpot = r;
+                    AIySpot = c;
+                    b = 0;
+                }
+                else {
+                    count = 0;
+                    b = 1;
+                }
+                if (count == n)
+                    return true;
+            }
+        }
+
+        //Backward Vertical Check
+        for (int c = y - 1; c >= 0; c--) {
+            count = 0;
+            b = 1;
+            for (int r = x - 1; r >= 0; r--) {
                 if (board[r][c] == Cell.O)
                     count += 1;
                 else if (board[r][c] == Cell.EMPTY && b == 1) {
@@ -398,8 +493,9 @@ public class SuperTicTacToeGame {
 
         //Diagonal Check
         for (int r = 0; r < (x - n + 1); r++) {
-            count = 0;
-            for (int c = 0; c < (y - n + 1); c++)
+            for (int c = 0; c < (y - n + 1); c++) {
+                count = 0;
+                b = 1;
                 for (int i = 0; i < n; i++) {
                     if (board[r + i][c + i] == Cell.O)
                         count += 1;
@@ -408,20 +504,44 @@ public class SuperTicTacToeGame {
                         AIxSpot = r + i;
                         AIySpot = c + i;
                         b = 0;
-                    }
-                    else {
+                    } else {
                         count = 0;
                         b = 1;
                     }
                     if (count == n)
                         return true;
                 }
+            }
+        }
+
+        //Backward Diagonal Check
+        for (int r = x - 1; r >= n - 1; r--) {
+            for (int c = y - 1; c >= n - 1; c--) {
+                count = 0;
+                b = 1;
+                for (int i = 0; i < n; i++) {
+                    if (board[r - i][c - i] == Cell.O)
+                        count += 1;
+                    else if (board[r - i][c - i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r - i;
+                        AIySpot = c - i;
+                        b = 0;
+                    } else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+            }
         }
 
         //Reverse Diagonal Check
         for (int r = 0; r < (x - n + 1); r++) {
-            count = 0;
-            for (int c = n - 1; c < y; c++)
+            for (int c = n - 1; c < y; c++) {
+                count = 0;
+                b = 1;
                 for (int i = 0; i < n; i++) {
                     if (board[r + i][c - i] == Cell.O)
                         count += 1;
@@ -430,14 +550,37 @@ public class SuperTicTacToeGame {
                         AIxSpot = r + i;
                         AIySpot = c - i;
                         b = 0;
-                    }
-                    else {
+                    } else {
                         count = 0;
                         b = 1;
                     }
                     if (count == n)
                         return true;
                 }
+            }
+        }
+
+        //Backward Reverse Diagonal Check
+        for (int r = x - 1; r > n - 2; r--) {
+            for (int c = y - n - 1; c >= 0; c--) {
+                count = 0;
+                b = 1;
+                for (int i = 0; i < n; i++) {
+                    if (board[r - i][c + i] == Cell.O)
+                        count += 1;
+                    else if (board[r - i][c + i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r - i;
+                        AIySpot = c + i;
+                        b = 0;
+                    } else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+            }
         }
 
         return false;
@@ -447,13 +590,83 @@ public class SuperTicTacToeGame {
         int x = numCols;
         int y = numRows;
         int n = numConnections;
-        int b = 1;  //buffer space
+        int b;  //buffer space
         int count;
+
+        //Horizontal Check
+        for (int r = 0; r < x - n - 1; r++) {
+            for (int c = 0; c < y - n - 1; c++) {
+                count = 0;
+                b = 1;
+                for (int i = 0; i < n; i ++) {
+                    if (board[r + i][c] == Cell.X)
+                        count += 1;
+                    else if (board[r + i][c] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r + i;
+                        AIySpot = c;
+                        b = 0;
+                    } else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+            }
+        }
+
+        //Vertical Check
+        for (int c = 0; c < y - n - 1; c++) {
+            for (int r = 0; r < x; r++) {
+                count = 0;
+                b = 1;
+                for (int i = 0; i < n; i ++) {
+                    if (board[r][c + i] == Cell.X)
+                        count += 1;
+                    else if (board[r][c + i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r;
+                        AIySpot = c + i;
+                        b = 0;
+                    } else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+            }
+        }
+
 
         //Horizontal Check
         for (int r = 0; r < x; r++) {
             count = 0;
+            b = 1;
             for (int c = 0; c < y; c++) {
+                if (board[r][c] == Cell.X)
+                    count += 1;
+                else if (board[r][c] == Cell.EMPTY && b == 1) {
+                    count += 1;
+                    AIxSpot = r;
+                    AIySpot = c;
+                    b = 0;
+                }
+                else {
+                    count = 0;
+                    b = 1;
+                }
+                if (count == n)
+                    return true;
+            }
+        }
+
+        //Backwards Horizontal Check
+        for (int r = x - 1; r >= 0; r--) {
+            count = 0;
+            b = 1;
+            for (int c = y - 1; c >= 0; c--) {
                 if (board[r][c] == Cell.X)
                     count += 1;
                 else if (board[r][c] == Cell.EMPTY && b == 1) {
@@ -474,7 +687,30 @@ public class SuperTicTacToeGame {
         //Vertical Check
         for (int c = 0; c < y; c++) {
             count = 0;
+            b = 1;
             for (int r = 0; r < x; r++) {
+                if (board[r][c] == Cell.X)
+                    count += 1;
+                else if (board[r][c] == Cell.EMPTY && b == 1) {
+                    count += 1;
+                    AIxSpot = r;
+                    AIySpot = c;
+                    b = 0;
+                }
+                else {
+                    count = 0;
+                    b = 1;
+                }
+                if (count == n)
+                    return true;
+            }
+        }
+
+        //Backward Vertical Check
+        for (int c = y - 1; c >= 0; c--) {
+            count = 0;
+            b = 1;
+            for (int r = x - 1; r >= 0; r--) {
                 if (board[r][c] == Cell.X)
                     count += 1;
                 else if (board[r][c] == Cell.EMPTY && b == 1) {
@@ -494,8 +730,9 @@ public class SuperTicTacToeGame {
 
         //Diagonal Check
         for (int r = 0; r < (x - n + 1); r++) {
-            count = 0;
-            for (int c = 0; c < (y - n + 1); c++)
+            for (int c = 0; c < (y - n + 1); c++) {
+                count = 0;
+                b = 1;
                 for (int i = 0; i < n; i++) {
                     if (board[r + i][c + i] == Cell.X)
                         count += 1;
@@ -504,20 +741,44 @@ public class SuperTicTacToeGame {
                         AIxSpot = r + i;
                         AIySpot = c + i;
                         b = 0;
-                    }
-                    else {
+                    } else {
                         count = 0;
                         b = 1;
                     }
                     if (count == n)
                         return true;
                 }
+            }
+        }
+
+        //Backward Diagonal Check
+        for (int r = x - 1; r >= n - 1; r--) {
+            for (int c = y - 1; c >= n - 1; c--) {
+                count = 0;
+                b = 1;
+                for (int i = 0; i < n; i++) {
+                    if (board[r - i][c - i] == Cell.X)
+                        count += 1;
+                    else if (board[r - i][c - i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r - i;
+                        AIySpot = c - i;
+                        b = 0;
+                    } else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+            }
         }
 
         //Reverse Diagonal Check
         for (int r = 0; r < (x - n + 1); r++) {
-            count = 0;
-            for (int c = n - 1; c < y; c++)
+            for (int c = n - 1; c < y; c++) {
+                count = 0;
+                b = 1;
                 for (int i = 0; i < n; i++) {
                     if (board[r + i][c - i] == Cell.X)
                         count += 1;
@@ -526,14 +787,37 @@ public class SuperTicTacToeGame {
                         AIxSpot = r + i;
                         AIySpot = c - i;
                         b = 0;
-                    }
-                    else {
+                    } else {
                         count = 0;
                         b = 1;
                     }
                     if (count == n)
                         return true;
                 }
+            }
+        }
+
+        //Backward Reverse Diagonal Check
+        for (int r = x - 1; r > n - 2; r--) {
+            for (int c = y - n - 1; c >= 0; c--) {
+                count = 0;
+                b = 1;
+                for (int i = 0; i < n; i++) {
+                    if (board[r - i][c + i] == Cell.X)
+                        count += 1;
+                    else if (board[r - i][c + i] == Cell.EMPTY && b == 1) {
+                        count += 1;
+                        AIxSpot = r - i;
+                        AIySpot = c + i;
+                        b = 0;
+                    } else {
+                        count = 0;
+                        b = 1;
+                    }
+                    if (count == n)
+                        return true;
+                }
+            }
         }
 
         return false;
