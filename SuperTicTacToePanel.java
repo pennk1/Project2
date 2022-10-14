@@ -1,3 +1,5 @@
+package project2;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -7,253 +9,268 @@ import static java.lang.Integer.parseInt;
 
 public class SuperTicTacToePanel extends JPanel {
 
-    private final JButton[][] jButtonsBoard;
-    private Cell[][] iBoard = new Cell[16][16];
-    private final JButton resetButton = new JButton("RESET");
-    private final JButton quitButton = new JButton("QUIT");
-    private final JButton undoButton = new JButton("UNDO");
-    private ImageIcon xIcon;
-    private ImageIcon oIcon;
-    private ImageIcon emptyIcon;
+	private final JButton[][] jButtonsBoard;
+	private Cell[][] iBoard = new Cell[16][16];
+	private final JButton resetButton = new JButton("RESET");
+	private final JButton quitButton = new JButton("QUIT");
+	private final JButton undoButton = new JButton("UNDO");
+	private ImageIcon xIcon;
+	private ImageIcon oIcon;
+	private ImageIcon emptyIcon;
 
-    private final SuperTicTacToeGame game;
+	private final SuperTicTacToeGame game;
 
-    private listener listener;
+	private listener listener;
 
-    //Assigns JPG Images to X/O Icons
-    private void IconAssignment(int size) {
-        int x = 100 / size * 3;
-        int y = 100 / size * 3;
-        xIcon = new ImageIcon(new ImageIcon ("src/xIcon.png").
-                getImage().getScaledInstance(x, y,
-                        Image.SCALE_SMOOTH));
-        oIcon = new ImageIcon(new ImageIcon ("src/oIcon.png").
-                getImage().getScaledInstance(x, y,
-                        Image.SCALE_SMOOTH));
-        emptyIcon = new ImageIcon(new ImageIcon (
-                "src/emptyIcon.png")
-                .getImage().getScaledInstance(
-                x, y, Image.SCALE_SMOOTH));
-    }
+	// Assigns JPG Images to X/O Icons
+	private void IconAssignment(int size) {
+		int x = 100 / size * 3;
+		int y = 100 / size * 3;
+		xIcon = new ImageIcon(
+				new ImageIcon("src/project2/xIcon.png").getImage()
+						.getScaledInstance(x, y, Image.SCALE_SMOOTH));
+		oIcon = new ImageIcon(
+				new ImageIcon("src/project2/oIcon.png").getImage()
+						.getScaledInstance(x, y, Image.SCALE_SMOOTH));
+		emptyIcon = new ImageIcon(
+				new ImageIcon("src/project2/emptyIcon.png").getImage()
+						.getScaledInstance(x, y, Image.SCALE_SMOOTH));
+	}
 
-    //Preps GUI Board
-    public SuperTicTacToePanel() {
-        //Creates new TicTacToeGame
-        game = new SuperTicTacToeGame();
+	// Preps GUI Board
+	public SuperTicTacToePanel() {
+		// Creates new TicTacToeGame
+		game = new SuperTicTacToeGame();
 
-        //Asks the player for TicTacToe Parameters
-        int boardSize = getBoardSize();
-        game.setSize(boardSize);
-        IconAssignment(boardSize);
+		// Asks the player for TicTacToe Parameters
+		int boardSize = getBoardSize();
+		game.setSize(boardSize);
+		IconAssignment(boardSize);
 
-        int connectionSize = getConnectionSize(boardSize);
-        game.setConnections(connectionSize);
+		int connectionSize = getConnectionSize(boardSize);
+		game.setConnections(connectionSize);
 
-        Player initialPlayer = getInitialPlayer();
-        game.setInitialPlayer(initialPlayer);
-        game.setPlayer(initialPlayer);
+		Player initialPlayer = getInitialPlayer();
+		game.setInitialPlayer(initialPlayer);
+		game.setPlayer(initialPlayer);
 
-        int AIAnswer = checkAIPlayer();
-        game.setAIPlayer(AIAnswer);
+		int AIAnswer = checkAIPlayer();
+		game.setAIPlayer(AIAnswer);
 
-        //Sets new board up with given parameters
-        game.reset();
-        jButtonsBoard = new JButton[game.getRows()][game.getCols()];
-        listener = new listener();
+		// Sets new board up with given parameters
+		game.reset();
+		jButtonsBoard = new JButton[game.getRows()][game.getCols()];
+		listener = new listener();
 
-        JPanel boardPanel = new JPanel();
-        JPanel buttonPanel = new JPanel();
-        boardPanel.setLayout(new GridLayout(game.getRows(),
-                game.getCols(), 1, 1));
-        buttonPanel.setLayout(new GridLayout(5, 1));
+		JPanel boardPanel = new JPanel();
+		JPanel buttonPanel = new JPanel();
+		boardPanel.setLayout(
+				new GridLayout(game.getRows(), game.getCols(), 1, 1));
+		buttonPanel.setLayout(new GridLayout(5, 1));
 
-        //Creates a 3 by 3 grid
-        for (int row = 0; row < game.getRows(); row++)
-            for (int col = 0; col < game.getCols(); col++) {
-                jButtonsBoard[row][col] = new JButton(
-                        "", emptyIcon);
-                jButtonsBoard[row][col].addActionListener(listener);
+		// Creates a 3 by 3 grid
+		for (int row = 0; row < game.getRows(); row++)
+			for (int col = 0; col < game.getCols(); col++) {
+				jButtonsBoard[row][col] = new JButton("", emptyIcon);
+				jButtonsBoard[row][col].addActionListener(listener);
 
-                jButtonsBoard[row][col].setBackground(Color.WHITE);
-                boardPanel.add(jButtonsBoard[row][col]);
-                iBoard[row][col] = Cell.EMPTY;
-            }
+				jButtonsBoard[row][col].setBackground(Color.WHITE);
+				boardPanel.add(jButtonsBoard[row][col]);
+				iBoard[row][col] = Cell.EMPTY;
+			}
 
-        //Sets up side panel for TicTacToeBoard
-        buttonPanel.add(undoButton);
-        buttonPanel.add(resetButton);
-        buttonPanel.add(quitButton);
+		// Sets up side panel for TicTacToeBoard
+		buttonPanel.add(new JPanel());
+		buttonPanel.add(undoButton);
+		buttonPanel.add(resetButton);
+		buttonPanel.add(quitButton);
 
-        //Sets Panels Side by Side
-        boardPanel.setBackground(Color.BLACK);
-        buttonPanel.setPreferredSize(new Dimension(
-                250, 600));
-        boardPanel.setPreferredSize(new Dimension(
-                600, 600));
-        JSplitPane splitPane = new JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT, buttonPanel, boardPanel);
+		// Sets Panels Side by Side
+		boardPanel.setBackground(Color.BLACK);
+		buttonPanel.setPreferredSize(new Dimension(250, 600));
+		boardPanel.setPreferredSize(new Dimension(600, 600));
+		JSplitPane splitPane = new JSplitPane(
+				JSplitPane.HORIZONTAL_SPLIT, buttonPanel, boardPanel);
 
-        add(splitPane);
-        ActionListeners();
-        iBoard = game.getBoard();
-        displayBoard();
-    }
+		add(splitPane);
+		ActionListeners();
+		iBoard = game.getBoard();
+		displayBoard();
+	}
 
-    private int getBoardSize(){
-        int temp = 0;
-        String size;
-        String s = "Board Size? (3-15)";
-        String m = "Invalid / Null Input";
-        while (temp < 2 || temp > 15) {
-            size = JOptionPane.showInputDialog(null, s);
-            try{
-                temp = returnVal(size);
-            }
-            catch(Exception e){
-                JOptionPane.showMessageDialog(null, m);
-                System.exit(0);
-            }
-        }
-        return temp;
-    }
+	private int getBoardSize() {
+		int temp = 0;
+		String size;
+		String s = "Board Size? (3-15)";
+		String m = "Invalid input. Please enter an integer between 3 & 15.";
+		while (temp < 3 || temp > 15) {
+			size = JOptionPane.showInputDialog(null, s);
 
-    private int getConnectionSize(int boardSize){
-        int temp = 0;
-        String length;
-        String s = "Connection Length? (Larger than 3x3 must have 4+ length)";
-        String m = "Invalid / Null Input";
-        while (temp > boardSize ||
-                (boardSize == 3 && temp != 3) ||
-                (boardSize > 3 && temp < 4)){
-            length = JOptionPane.showInputDialog(null, s);
+			if (size == null) {
+				System.exit(0);
+			}
 
-            try {
-                temp = returnVal(length);
-            }
-            catch(Exception e){
-                JOptionPane.showMessageDialog(null, m);
-                System.exit(0);
-            }
-        }
+			try {
+				temp = returnVal(size);
 
-        return temp;
-    }
+				if (temp < 3 || temp > 15) {
+					JOptionPane.showMessageDialog(null, m);
+				}
 
-    private Player getInitialPlayer(){
-        Object[] possibleAnswers = {"X", "O"};
-        Object answer = JOptionPane.showInputDialog(
-                null,
-                "Who Goes First",
-                "Who Goes First",
-                JOptionPane.INFORMATION_MESSAGE,
-                null, possibleAnswers, possibleAnswers[0]);
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(null, m);
+			}
+		}
+		return temp;
+	}
 
-        return returnPlayer(answer);
-    }
+	private int getConnectionSize(int boardSize) {
+		int temp = 0;
+		String length;
+		String s = "Connection Length? (Larger than 3x3 must have 4+ length)";
+		String m = "Invalid Input. Please enter a valid integer.";
+		while (temp > boardSize || (boardSize == 3 && temp != 3)
+				|| (boardSize > 3 && temp < 4)) {
+			length = JOptionPane.showInputDialog(null, s);
 
-    private int checkAIPlayer(){
-        return JOptionPane.showConfirmDialog(
-                null,
-                "AI Opponent?",
-                "The AI would be O's",
-                JOptionPane.YES_NO_OPTION);
-    }
+			if (length == null) {
+				System.exit(0);
+			}
 
-    //ActionListener for TicTacToeBoard
-    private class listener implements ActionListener {
-        public void actionPerformed(ActionEvent event) {
-            boolean Message = true;
-            for (int row = 0; row < game.getRows(); row++)
-                for (int col = 0; col < game.getCols(); col++)
-                    if (jButtonsBoard[row][col] == event.getSource()){
-                        game.select(row, col);
-                        iBoard = game.getBoard();
-                        displayBoard();
-                        if (game.isComplete()) {
-                            resetGame();
-                            Message = false;
-                        }
-                    }
-            game.AIChoice();
-            displayBoard();
-            if (game.isComplete() && Message)
-                resetGame();
-        }
-    }
+			try {
+				temp = returnVal(length);
 
-    //resets game after game over
-    private void resetGame(){
-        gameOver();
-        Player temp = game.getInitialPlayer();
-        game.setPlayer(temp);
-        game.reset();
-        iBoard = game.getBoard();
-        displayBoard();
-    }
+				if ((boardSize > 3 && temp < 4)
+						|| (boardSize > 3 && temp > boardSize)) {
+					JOptionPane.showMessageDialog(null,
+							"A board larger than a 3x3 must have 4 connections or more.");
+				} else if (boardSize == 3 && temp != 3) {
+					JOptionPane.showMessageDialog(null,
+							"The connection length for a 3x3 must be 3.");
+				}
 
-    //GameOver Message
-    private void gameOver(){
-            GameStatus status = game.getStatus();
-            if (status == GameStatus.X_WON)
-                JOptionPane.showMessageDialog(
-                        null,
-                        "X WINS!");
-            else if (status == GameStatus.O_WON)
-                JOptionPane.showMessageDialog(
-                        null,
-                        "O WINS!");
-            else
-                JOptionPane.showMessageDialog(
-                        null,
-                        "CATS! NO ONE WINS!");
-    }
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(null, m);
+			}
+		}
 
-    //Action Listener for Side Panel
-    public void ActionListeners(){
-        quitButton.addActionListener(e -> System.exit(0));
+		return temp;
+	}
 
-        resetButton.addActionListener(e -> {
-            Player temp = game.getInitialPlayer();
-            game.setPlayer(temp);
-            game.reset();
-            iBoard = game.getBoard();
-            displayBoard();
-        });
+	private Player getInitialPlayer() {
+		Object[] possibleAnswers = { "X", "O" };
+		Object answer = JOptionPane.showInputDialog(null,
+				"Who will play first?", "First Turn",
+				JOptionPane.INFORMATION_MESSAGE, null, possibleAnswers,
+				possibleAnswers[0]);
 
-        undoButton.addActionListener(e -> {
-            game.undoAction();
-            displayBoard();
-        });
-    }
+		return returnPlayer(answer);
+	}
 
-    //Conversion of Strings to appropriate type
-    private int returnVal (String s){
-        return parseInt(s);
-    }
+	private int checkAIPlayer() {
+		return JOptionPane.showConfirmDialog(null,
+				"Would you like an AI Opponent? It would play as O's.",
+				"AI Opponent?", JOptionPane.YES_NO_OPTION);
+	}
 
-    private Player returnPlayer (Object s){
-        String m = "" + s;
-        if (m.equals("O"))
-            return Player.OPlayer;
-        else
-            return Player.XPlayer;
-    }
+	// ActionListener for TicTacToeBoard
+	private class listener implements ActionListener {
+		public void actionPerformed(ActionEvent event) {
+			boolean Message = true;
+			for (int row = 0; row < game.getRows(); row++)
+				for (int col = 0; col < game.getCols(); col++)
+					if (jButtonsBoard[row][col] == event.getSource()) {
+						game.select(row, col);
+						iBoard = game.getBoard();
+						displayBoard();
+						if (game.isComplete()) {
+							resetGame();
+							Message = false;
+						}
+					}
+			game.AIChoice();
+			displayBoard();
+			if (game.isComplete() && Message)
+				resetGame();
+		}
+	}
 
-    //Assigns Icon Given Cell Data
-    private void displayBoard(){
-        //Checks for X Cell
-        for (int row = 0; row < game.getRows(); row++)
-            for (int col = 0; col < game.getCols(); col++) {
-                //Sets X Cell
-                if (iBoard[row][col] == Cell.X)
-                    jButtonsBoard[row][col].setIcon(xIcon);
-                //Sets O Cell
-                else if (iBoard[row][col] == Cell.O)
-                    jButtonsBoard[row][col].setIcon(oIcon);
-                //Leaves Empty Cell Empty
-                else
-                    jButtonsBoard[row][col].setIcon(emptyIcon);
+	// resets game after game over
+	private void resetGame() {
+		gameOver();
+		Player temp = game.getInitialPlayer();
+		game.setPlayer(temp);
+		game.reset();
+		iBoard = game.getBoard();
+		displayBoard();
+	}
 
-            }
-    }
+	// GameOver Message
+	private void gameOver() {
+		GameStatus status = game.getStatus();
+		if (status == GameStatus.X_WON)
+			JOptionPane.showMessageDialog(null, "X WINS!");
+		else if (status == GameStatus.O_WON)
+			JOptionPane.showMessageDialog(null, "O WINS!");
+		else
+			JOptionPane.showMessageDialog(null, "CATS! NO ONE WINS!");
+	}
+
+	// Action Listener for Side Panel
+	public void ActionListeners() {
+		quitButton.addActionListener(e -> System.exit(0));
+
+		resetButton.addActionListener(e -> {
+			Player temp = game.getInitialPlayer();
+			game.setPlayer(temp);
+			game.reset();
+			iBoard = game.getBoard();
+			displayBoard();
+		});
+
+		undoButton.addActionListener(e -> {
+			try{
+				game.undoAction();
+			}
+			catch (IndexOutOfBoundsException ex){
+				String m = "There are no moves to undo";
+				JOptionPane.showMessageDialog(null, m);
+			}
+			displayBoard();
+		});
+	}
+
+	// Conversion of Strings to appropriate type
+	private int returnVal(String s) {
+		return parseInt(s);
+	}
+
+	private Player returnPlayer(Object s) {
+		String m = "" + s;
+		if (m.equals("O"))
+			return Player.OPlayer;
+		else
+			return Player.XPlayer;
+	}
+
+	// Assigns Icon Given Cell Data
+	private void displayBoard() {
+
+		// Checks for X Cell
+		for (int row = 0; row < game.getRows(); row++)
+			for (int col = 0; col < game.getCols(); col++) {
+
+				// Sets X Cell
+				if (iBoard[row][col] == Cell.X)
+					jButtonsBoard[row][col].setIcon(xIcon);
+
+				// Sets O Cell
+				else if (iBoard[row][col] == Cell.O)
+					jButtonsBoard[row][col].setIcon(oIcon);
+
+				// Leaves Empty Cell Empty
+				else
+					jButtonsBoard[row][col].setIcon(emptyIcon);
+			}
+	}
 }
